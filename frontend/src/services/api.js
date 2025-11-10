@@ -54,7 +54,7 @@ api.interceptors.response.use(
 
 // Service-specific API instances for direct communication (if needed)
 export const authAPI = axios.create({
-  baseURL: import.meta.env.VITE_AUTH_SERVICE_URL || 'http://localhost:8000/api/auth',
+  baseURL: import.meta.env.PROD ? '/api/auth' : (import.meta.env.VITE_AUTH_SERVICE_URL || 'http://localhost:3000/api/auth'),
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
