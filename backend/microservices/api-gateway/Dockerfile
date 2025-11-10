@@ -38,6 +38,9 @@ RUN adduser -S nodejs -u 1001
 # Copy package files
 COPY api-gateway/package*.json ./
 
+# Copy shared-lib to expected location for npm install
+COPY --from=builder /shared-lib /shared-lib
+
 # Install only production dependencies
 RUN npm ci --only=production && npm cache clean --force
 
