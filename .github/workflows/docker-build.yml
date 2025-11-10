@@ -23,14 +23,14 @@ jobs:
       matrix:
         service:
           - name: api-gateway
-            context: Ivorian_realty/backend/microservices/api-gateway
-            dockerfile: Ivorian_realty/backend/microservices/api-gateway/Dockerfile
+            context: backend/microservices/api-gateway
+            dockerfile: backend/microservices/api-gateway/Dockerfile
           - name: auth-service
-            context: Ivorian_realty/backend/microservices/auth-service
-            dockerfile: Ivorian_realty/backend/microservices/auth-service/Dockerfile
+            context: backend/microservices/auth-service
+            dockerfile: backend/microservices/auth-service/Dockerfile
           - name: property-service
-            context: Ivorian_realty/backend/microservices/property-service
-            dockerfile: Ivorian_realty/backend/microservices/property-service/Dockerfile
+            context: backend/microservices/property-service
+            dockerfile: backend/microservices/property-service/Dockerfile
 
     steps:
       - name: Checkout code
@@ -47,7 +47,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build shared library
-        working-directory: Ivorian_realty/backend/microservices/shared-lib
+        working-directory: backend/microservices/shared-lib
         run: |
           npm ci
           npm run build

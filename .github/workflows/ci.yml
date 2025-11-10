@@ -23,22 +23,22 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: Ivorian_realty/backend/microservices/shared-lib/package-lock.json
+          cache-dependency-path: backend/microservices/shared-lib/package-lock.json
 
       - name: Install dependencies
-        working-directory: Ivorian_realty/backend/microservices/shared-lib
+        working-directory: backend/microservices/shared-lib
         run: npm ci
 
       - name: Lint
-        working-directory: Ivorian_realty/backend/microservices/shared-lib
+        working-directory: backend/microservices/shared-lib
         run: npm run lint || true
 
       - name: Build
-        working-directory: Ivorian_realty/backend/microservices/shared-lib
+        working-directory: backend/microservices/shared-lib
         run: npm run build
 
       - name: Test
-        working-directory: Ivorian_realty/backend/microservices/shared-lib
+        working-directory: backend/microservices/shared-lib
         run: npm test || true
 
   # Build and test API Gateway
@@ -55,28 +55,28 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: Ivorian_realty/backend/microservices/api-gateway/package-lock.json
+          cache-dependency-path: backend/microservices/api-gateway/package-lock.json
 
       - name: Build shared library
-        working-directory: Ivorian_realty/backend/microservices/shared-lib
+        working-directory: backend/microservices/shared-lib
         run: |
           npm ci
           npm run build
 
       - name: Install dependencies
-        working-directory: Ivorian_realty/backend/microservices/api-gateway
+        working-directory: backend/microservices/api-gateway
         run: npm ci
 
       - name: Lint
-        working-directory: Ivorian_realty/backend/microservices/api-gateway
+        working-directory: backend/microservices/api-gateway
         run: npm run lint || true
 
       - name: Build
-        working-directory: Ivorian_realty/backend/microservices/api-gateway
+        working-directory: backend/microservices/api-gateway
         run: npm run build
 
       - name: Test
-        working-directory: Ivorian_realty/backend/microservices/api-gateway
+        working-directory: backend/microservices/api-gateway
         run: npm test || true
 
   # Build and test Auth Service
@@ -93,28 +93,28 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: Ivorian_realty/backend/microservices/auth-service/package-lock.json
+          cache-dependency-path: backend/microservices/auth-service/package-lock.json
 
       - name: Build shared library
-        working-directory: Ivorian_realty/backend/microservices/shared-lib
+        working-directory: backend/microservices/shared-lib
         run: |
           npm ci
           npm run build
 
       - name: Install dependencies
-        working-directory: Ivorian_realty/backend/microservices/auth-service
+        working-directory: backend/microservices/auth-service
         run: npm ci
 
       - name: Lint
-        working-directory: Ivorian_realty/backend/microservices/auth-service
+        working-directory: backend/microservices/auth-service
         run: npm run lint || true
 
       - name: Build
-        working-directory: Ivorian_realty/backend/microservices/auth-service
+        working-directory: backend/microservices/auth-service
         run: npm run build
 
       - name: Test
-        working-directory: Ivorian_realty/backend/microservices/auth-service
+        working-directory: backend/microservices/auth-service
         run: npm test || true
 
   # Build and test Property Service
@@ -131,28 +131,28 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: Ivorian_realty/backend/microservices/property-service/package-lock.json
+          cache-dependency-path: backend/microservices/property-service/package-lock.json
 
       - name: Build shared library
-        working-directory: Ivorian_realty/backend/microservices/shared-lib
+        working-directory: backend/microservices/shared-lib
         run: |
           npm ci
           npm run build
 
       - name: Install dependencies
-        working-directory: Ivorian_realty/backend/microservices/property-service
+        working-directory: backend/microservices/property-service
         run: npm ci
 
       - name: Lint
-        working-directory: Ivorian_realty/backend/microservices/property-service
+        working-directory: backend/microservices/property-service
         run: npm run lint || true
 
       - name: Build
-        working-directory: Ivorian_realty/backend/microservices/property-service
+        working-directory: backend/microservices/property-service
         run: npm run build
 
       - name: Test
-        working-directory: Ivorian_realty/backend/microservices/property-service
+        working-directory: backend/microservices/property-service
         run: npm test || true
 
   # Build and test Frontend
@@ -168,25 +168,25 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: Ivorian_realty/frontend/package-lock.json
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies
-        working-directory: Ivorian_realty/frontend
+        working-directory: frontend
         run: npm ci
 
       - name: Lint
-        working-directory: Ivorian_realty/frontend
+        working-directory: frontend
         run: npm run lint || true
 
       - name: Build
-        working-directory: Ivorian_realty/frontend
+        working-directory: frontend
         run: npm run build
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: frontend-build
-          path: Ivorian_realty/frontend/dist
+          path: frontend/dist
           retention-days: 7
 
   # Summary job

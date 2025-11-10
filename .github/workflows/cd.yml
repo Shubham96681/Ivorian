@@ -23,7 +23,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Build shared library
-        working-directory: Ivorian_realty/backend/microservices/shared-lib
+        working-directory: backend/microservices/shared-lib
         run: |
           npm ci
           npm run build
@@ -31,8 +31,8 @@ jobs:
       - name: Build API Gateway image
         uses: docker/build-push-action@v5
         with:
-          context: Ivorian_realty/backend/microservices/api-gateway
-          file: Ivorian_realty/backend/microservices/api-gateway/Dockerfile
+          context: backend/microservices/api-gateway
+          file: backend/microservices/api-gateway/Dockerfile
           push: false
           tags: ivorian-realty/api-gateway:latest
           cache-from: type=gha
@@ -42,8 +42,8 @@ jobs:
       - name: Build Auth Service image
         uses: docker/build-push-action@v5
         with:
-          context: Ivorian_realty/backend/microservices/auth-service
-          file: Ivorian_realty/backend/microservices/auth-service/Dockerfile
+          context: backend/microservices/auth-service
+          file: backend/microservices/auth-service/Dockerfile
           push: false
           tags: ivorian-realty/auth-service:latest
           cache-from: type=gha
@@ -53,8 +53,8 @@ jobs:
       - name: Build Property Service image
         uses: docker/build-push-action@v5
         with:
-          context: Ivorian_realty/backend/microservices/property-service
-          file: Ivorian_realty/backend/microservices/property-service/Dockerfile
+          context: backend/microservices/property-service
+          file: backend/microservices/property-service/Dockerfile
           push: false
           tags: ivorian-realty/property-service:latest
           cache-from: type=gha
@@ -90,14 +90,14 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: Ivorian_realty/frontend/package-lock.json
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies
-        working-directory: Ivorian_realty/frontend
+        working-directory: frontend
         run: npm ci
 
       - name: Build frontend
-        working-directory: Ivorian_realty/frontend
+        working-directory: frontend
         run: npm run build
         env:
           VITE_API_URL: ${{ secrets.VITE_API_URL || 'http://65.0.122.243/api' }}
@@ -106,7 +106,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: frontend-build
-          path: Ivorian_realty/frontend/dist
+          path: frontend/dist
           retention-days: 1
 
   # Deploy to server
@@ -145,9 +145,9 @@ jobs:
           ssh ${{ secrets.SSH_USER || 'ec2-user' }}@${{ secrets.SERVER_HOST || '65.0.122.243' }} "mkdir -p /tmp/docker-images /tmp/frontend-build /opt/ivorian-realty/backend/microservices/infrastructure/nginx"
           scp -r ./docker-images/* ${{ secrets.SSH_USER || 'ec2-user' }}@${{ secrets.SERVER_HOST || '65.0.122.243' }}:/tmp/docker-images/
           scp -r ./frontend-build/* ${{ secrets.SSH_USER || 'ec2-user' }}@${{ secrets.SERVER_HOST || '65.0.122.243' }}:/tmp/frontend-build/
-          scp Ivorian_realty/backend/microservices/infrastructure/docker-compose.prod.yml ${{ secrets.SSH_USER || 'ec2-user' }}@${{ secrets.SERVER_HOST || '65.0.122.243' }}:/opt/ivorian-realty/docker-compose.yml
-          scp Ivorian_realty/backend/microservices/infrastructure/nginx/nginx.conf ${{ secrets.SSH_USER || 'ec2-user' }}@${{ secrets.SERVER_HOST || '65.0.122.243' }}:/opt/ivorian-realty/backend/microservices/infrastructure/nginx/nginx.conf
-          scp Ivorian_realty/.github/scripts/deploy.sh ${{ secrets.SSH_USER || 'ec2-user' }}@${{ secrets.SERVER_HOST || '65.0.122.243' }}:/opt/ivorian-realty/deploy.sh
+          scp backend/microservices/infrastructure/docker-compose.prod.yml ${{ secrets.SSH_USER || 'ec2-user' }}@${{ secrets.SERVER_HOST || '65.0.122.243' }}:/opt/ivorian-realty/docker-compose.yml
+          scp backend/microservices/infrastructure/nginx/nginx.conf ${{ secrets.SSH_USER || 'ec2-user' }}@${{ secrets.SERVER_HOST || '65.0.122.243' }}:/opt/ivorian-realty/backend/microservices/infrastructure/nginx/nginx.conf
+          scp .github/scripts/deploy.sh ${{ secrets.SSH_USER || 'ec2-user' }}@${{ secrets.SERVER_HOST || '65.0.122.243' }}:/opt/ivorian-realty/deploy.sh
 
       - name: Deploy on server
         run: |
