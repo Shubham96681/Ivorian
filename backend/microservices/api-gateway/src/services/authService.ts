@@ -144,7 +144,9 @@ export class AuthService {
       if (error instanceof AppError) {
         throw error;
       }
-      throw new AppError('Login failed', 500);
+      // Log the actual error for debugging
+      console.error('Login error:', error);
+      throw new AppError(`Login failed: ${error instanceof Error ? error.message : String(error)}`, 500);
     }
   }
 
