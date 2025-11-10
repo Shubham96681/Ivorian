@@ -388,8 +388,20 @@ async function startServer() {
     usersCollection = db.collection('users');
     
     // Create indexes for better performance
-    await usersCollection.createIndex({ email: 1 }, { unique: true });
-    await usersCollection.createIndex({ id: 1 }, { unique: true });
+    try {
+      await usersCollection.createIndex({ email: 1 }, { unique: true });
+      // Drop old problematic id index if it exists
+      try {
+        await usersCollection.dropIndex('id_1');
+      } catch (e) {
+        // Index doesn't exist, ignore
+      }
+    } catch (error: any) {
+      // Index might already exist, continue
+      if (error.code !== 85 && error.code !== 11000) {
+        logger.warn('Index creation warning:', error.message);
+      }
+    }
     
     console.log('✅ MongoDB connected and indexes created');
     

@@ -279,11 +279,23 @@ async function startServer() {
     propertiesCollection = db.collection('properties');
     
     // Create indexes for better performance
-    await propertiesCollection.createIndex({ id: 1 }, { unique: true });
-    await propertiesCollection.createIndex({ type: 1 });
-    await propertiesCollection.createIndex({ price: 1 });
-    await propertiesCollection.createIndex({ 'location.city': 1 });
-    await propertiesCollection.createIndex({ title: 'text', description: 'text' });
+    try {
+      // Drop old problematic id index if it exists
+      try {
+        await propertiesCollection.dropIndex('id_1');
+      } catch (e) {
+        // Index doesn't exist, ignore
+      }
+      await propertiesCollection.createIndex({ type: 1 });
+      await propertiesCollection.createIndex({ price: 1 });
+      await propertiesCollection.createIndex({ 'location.city': 1 });
+      await propertiesCollection.createIndex({ title: 'text', description: 'text' });
+    } catch (error: any) {
+      // Index might already exist, continue
+      if (error.code !== 85 && error.code !== 11000) {
+        logger.warn('Index creation warning:', error.message);
+      }
+    }
     
     // Insert sample data if collection is empty
     const count = await propertiesCollection.countDocuments();
