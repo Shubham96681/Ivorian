@@ -244,8 +244,8 @@ async function startServer() {
     // Initialize port configuration
     await portManager.initializePorts();
     
-    // Get the assigned port for API Gateway
-    const PORT = portManager.getPort('api-gateway') || 8000;
+    // Get the assigned port for API Gateway (use env PORT if set, otherwise use portManager)
+    const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : (portManager.getPort('api-gateway') || 3000);
 
 // Start server
 app.listen(PORT, () => {
