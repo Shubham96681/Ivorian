@@ -32,7 +32,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: backend/microservices
-          file: backend/microservices/api-gateway/Dockerfile
+          file: api-gateway/Dockerfile
           push: false
           tags: ivorian-realty/api-gateway:latest
           cache-from: type=gha
@@ -43,7 +43,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: backend/microservices
-          file: backend/microservices/auth-service/Dockerfile
+          file: auth-service/Dockerfile
           push: false
           tags: ivorian-realty/auth-service:latest
           cache-from: type=gha
@@ -54,7 +54,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: backend/microservices
-          file: backend/microservices/property-service/Dockerfile
+          file: property-service/Dockerfile
           push: false
           tags: ivorian-realty/property-service:latest
           cache-from: type=gha

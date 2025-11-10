@@ -23,14 +23,11 @@ jobs:
       matrix:
         service:
           - name: api-gateway
-            context: backend/microservices/api-gateway
-            dockerfile: backend/microservices/api-gateway/Dockerfile
+            dockerfile: api-gateway/Dockerfile
           - name: auth-service
-            context: backend/microservices/auth-service
-            dockerfile: backend/microservices/auth-service/Dockerfile
+            dockerfile: auth-service/Dockerfile
           - name: property-service
-            context: backend/microservices/property-service
-            dockerfile: backend/microservices/property-service/Dockerfile
+            dockerfile: property-service/Dockerfile
 
     steps:
       - name: Checkout code
@@ -68,7 +65,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context: ${{ matrix.service.context }}
+          context: backend/microservices
           file: ${{ matrix.service.dockerfile }}
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
