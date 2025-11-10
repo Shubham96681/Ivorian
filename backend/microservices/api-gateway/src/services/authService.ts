@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import { ObjectId } from 'mongodb';
 import { getDatabase } from '@ivorian-realty/shared-lib';
 import { AppError } from '../middleware/errorHandler.js';
@@ -67,7 +67,7 @@ export class AuthService {
           role: userData.role 
         },
         JWT_SECRET,
-        { expiresIn: JWT_EXPIRES_IN }
+        { expiresIn: JWT_EXPIRES_IN } as SignOptions
       );
 
       // Return user data without password
@@ -119,7 +119,7 @@ export class AuthService {
           role: user.role 
         },
         JWT_SECRET,
-        { expiresIn: JWT_EXPIRES_IN }
+        { expiresIn: JWT_EXPIRES_IN } as SignOptions
       );
 
       // Return user data without password
