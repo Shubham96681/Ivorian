@@ -16,12 +16,15 @@ fi
 
 echo "Using: $DOCKER_COMPOSE"
 
-# Create necessary directories
-mkdir -p /opt/ivorian-realty
-mkdir -p /opt/ivorian-realty/frontend
-mkdir -p /opt/ivorian-realty/backend/microservices/{shared-lib,api-gateway,auth-service,property-service}
-mkdir -p /opt/ivorian-realty/backend/microservices/infrastructure/nginx
-mkdir -p /opt/ivorian-realty/logs
+# Ensure proper permissions
+echo "Setting up directories and permissions..."
+sudo mkdir -p /opt/ivorian-realty
+sudo mkdir -p /opt/ivorian-realty/frontend
+sudo mkdir -p /opt/ivorian-realty/backend/microservices/{shared-lib,api-gateway,auth-service,property-service}
+sudo mkdir -p /opt/ivorian-realty/backend/microservices/infrastructure/nginx
+sudo mkdir -p /opt/ivorian-realty/logs
+sudo chown -R ec2-user:ec2-user /opt/ivorian-realty
+sudo chmod -R 755 /opt/ivorian-realty
 
 # Start infrastructure services (MongoDB, Redis) with Docker
 echo "Starting MongoDB and Redis..."

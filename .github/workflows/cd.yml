@@ -134,10 +134,20 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -H ${{ secrets.SERVER_HOST || '13.126.156.163' }} >> ~/.ssh/known_hosts
 
+      - name: Setup directories and permissions
+        run: |
+          ssh ${{ secrets.SSH_USER || 'ec2-user' }}@${{ secrets.SERVER_HOST || '13.126.156.163' }} << 'EOF'
+            set -e
+            # Create directories with proper permissions
+            sudo mkdir -p /opt/ivorian-realty/backend/microservices/{shared-lib,api-gateway,auth-service,property-service} /opt/ivorian-realty/frontend /opt/ivorian-realty/backend/microservices/infrastructure/nginx /opt/ivorian-realty/logs
+            # Set ownership to ec2-user
+            sudo chown -R ec2-user:ec2-user /opt/ivorian-realty
+            # Set proper permissions
+            sudo chmod -R 755 /opt/ivorian-realty
+          EOF
+
       - name: Copy files to server
         run: |
-          ssh ${{ secrets.SSH_USER || 'ec2-user' }}@${{ secrets.SERVER_HOST || '13.126.156.163' }} "mkdir -p /opt/ivorian-realty/backend/microservices/{shared-lib,api-gateway,auth-service,property-service} /opt/ivorian-realty/frontend /opt/ivorian-realty/backend/microservices/infrastructure/nginx"
-          
           # Copy backend builds
           scp -r ./backend-builds/shared-lib/* ${{ secrets.SSH_USER || 'ec2-user' }}@${{ secrets.SERVER_HOST || '13.126.156.163' }}:/opt/ivorian-realty/backend/microservices/shared-lib/
           scp -r ./backend-builds/api-gateway/* ${{ secrets.SSH_USER || 'ec2-user' }}@${{ secrets.SERVER_HOST || '13.126.156.163' }}:/opt/ivorian-realty/backend/microservices/api-gateway/
