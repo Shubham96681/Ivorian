@@ -59,4 +59,4 @@ export const PROPERTY_STATUS = {
 } as const;
 
 // Port management
-export * from './portManager';
+export * from './portManager.js';

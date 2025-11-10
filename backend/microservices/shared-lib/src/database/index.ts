@@ -1,3 +1,3 @@
 // Database utilities and connections
-export * from './mongodb';
+export * from './mongodb.js';
 
