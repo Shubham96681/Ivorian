@@ -1,25 +1,19 @@
 #!/bin/bash
 
-echo "Clearing and reseeding database..."
+echo "Reseeding database with test users..."
 
-# Connect to MongoDB and clear collections
-docker exec ivorian-mongodb mongosh -u admin -p password123 --authenticationDatabase admin ivorian_realty --eval "
-  db.users.deleteMany({});
-  db.properties.deleteMany({});
-  db.users.dropIndexes();
-  db.properties.dropIndexes();
-  print('Database cleared successfully');
-"
+# Connect to MongoDB and clear existing data, then reseed
+docker exec ivorian-mongodb mongosh -u admin -p password123 --authenticationDatabase admin ivorian_realty << 'EOF'
+// Drop indexes first to avoid issues
+db.users.dropIndexes();
+db.properties.dropIndexes();
 
-echo "Database cleared. Restarting API Gateway to trigger seeding..."
-echo "The API Gateway will automatically seed the database on startup."
+// Clear collections
+db.users.deleteMany({});
+db.properties.deleteMany({});
 
-echo ""
-echo "Test users that will be created:"
-echo "- john.doe@example.com (buyer) - Password: password123"
-echo "- buyer@example.com (buyer) - Password: password123"
-echo "- jane.smith@example.com (seller) - Password: password123"
-echo "- seller@example.com (seller) - Password: password123"
-echo "- ahmed.traore@example.com (agent) - Password: password123"
-echo "- admin@example.com (admin) - Password: password123"
+print("Database cleared successfully!");
+EOF
 
+echo "Database cleared. The API Gateway will reseed on next restart."
+echo "Or you can manually trigger seeding by restarting the API Gateway service."

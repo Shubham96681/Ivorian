@@ -9,9 +9,9 @@ export async function seedDatabase() {
 
     // Check if data already exists by checking for specific test users
     try {
-      const existingUser = await usersCollection.findOne({ email: 'john.doe@example.com' });
+      const existingUser = await usersCollection.findOne({ email: 'buyer@example.com' });
       if (existingUser) {
-        console.log('Database already seeded, skipping...');
+        console.log('Database already seeded (buyer@example.com exists), skipping...');
         return;
       }
     } catch (checkError) {
