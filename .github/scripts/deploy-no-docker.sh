@@ -135,12 +135,27 @@ if [ -f "package.json" ]; then
     npm install --omit=dev --ignore-scripts --no-save || npm install --production --ignore-scripts --no-save
 fi
 
+# Stop any existing services first
+echo "Stopping any existing Node.js services..."
+pkill -9 -f "node.*dist/server.js" || true
+pkill -9 -f "node.*api-gateway" || true
+pkill -9 -f "node.*auth-service" || true
+pkill -9 -f "node.*property-service" || true
+sleep 2
+
+# Make sure ports are free
+lsof -ti:3000 | xargs kill -9 2>/dev/null || true
+lsof -ti:3001 | xargs kill -9 2>/dev/null || true
+lsof -ti:3002 | xargs kill -9 2>/dev/null || true
+sleep 2
+
 # Start Auth Service
 echo "Starting Auth Service..."
 cd /opt/ivorian-realty/backend/microservices/auth-service
 NODE_ENV=production PORT=3001 MONGODB_URI="mongodb://admin:password123@localhost:27017/ivorian_realty?authSource=admin" JWT_SECRET="your-secret-key-change-in-production" npm start > /tmp/auth-service.log 2>&1 &
 AUTH_PID=$!
 echo "Auth Service PID: $AUTH_PID"
+sleep 2
 
 # Start Property Service
 echo "Starting Property Service..."
@@ -148,8 +163,9 @@ cd /opt/ivorian-realty/backend/microservices/property-service
 NODE_ENV=production PORT=3002 MONGODB_URI="mongodb://admin:password123@localhost:27017/ivorian_realty?authSource=admin" npm start > /tmp/property-service.log 2>&1 &
 PROPERTY_PID=$!
 echo "Property Service PID: $PROPERTY_PID"
+sleep 2
 
-# Start API Gateway
+# Start API Gateway (this will also seed the database)
 echo "Starting API Gateway..."
 cd /opt/ivorian-realty/backend/microservices/api-gateway
 NODE_ENV=production PORT=3000 MONGODB_URI="mongodb://admin:password123@localhost:27017/ivorian_realty?authSource=admin" REDIS_HOST=localhost REDIS_PORT=6379 JWT_SECRET="your-secret-key-change-in-production" AUTH_SERVICE_URL="http://localhost:3001" PROPERTY_SERVICE_URL="http://localhost:3002" npm start > /tmp/api-gateway.log 2>&1 &
@@ -196,20 +212,54 @@ fi
 sudo systemctl restart nginx
 sudo systemctl enable nginx
 
-# Wait a bit for services to start
-echo "Waiting for services to initialize..."
-sleep 10
+# Wait for services to start and database to seed
+echo "Waiting for services to initialize and database to seed..."
+sleep 15
 
 # Check service health
 echo "Checking service health..."
 for service in api-gateway auth-service property-service; do
-    if ps aux | grep -q "node.*$service.*dist/server.js"; then
+    if pgrep -f "node.*$service.*dist/server.js" > /dev/null; then
         echo "✓ $service is running"
     else
         echo "⚠ WARNING: $service is not running"
+        echo "  Last 10 lines of log:"
         tail -10 /tmp/${service}.log || true
     fi
 done
+
+# Verify database seeding
+echo ""
+echo "Verifying database seeding..."
+sleep 5
+docker exec ivorian-mongodb mongosh -u admin -p password123 --authenticationDatabase admin ivorian_realty --eval "
+const userCount = db.users.countDocuments({});
+print('Total users in database: ' + userCount);
+if (userCount > 0) {
+  print('✓ Database seeded successfully');
+  const buyer = db.users.findOne({ email: 'buyer@example.com' });
+  if (buyer) {
+    print('✓ buyer@example.com exists - ready for login');
+  } else {
+    print('⚠ buyer@example.com not found');
+  }
+} else {
+  print('⚠ No users found - check API Gateway logs for seeding errors');
+  print('Check: tail -30 /tmp/api-gateway.log');
+}
+" || echo "⚠ Could not verify database - MongoDB may not be ready"
+
+# Check API Gateway logs for seeding messages
+echo ""
+echo "Checking API Gateway logs for seeding status..."
+if grep -q "Seeding database" /tmp/api-gateway.log 2>/dev/null; then
+    echo "✓ Seeding process detected in logs"
+    grep -i "seed\|user\|Created" /tmp/api-gateway.log | tail -5
+else
+    echo "⚠ No seeding messages found in logs"
+    echo "  Last 10 lines of API Gateway log:"
+    tail -10 /tmp/api-gateway.log
+fi
 
 echo ""
 echo "========================================="
