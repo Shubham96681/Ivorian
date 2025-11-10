@@ -2,7 +2,7 @@ import bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
 import { ObjectId } from 'mongodb';
 import { getDatabase } from '@ivorian-realty/shared-lib';
-import { AppError } from '../middleware/errorHandler';
+import { AppError } from '../middleware/errorHandler.js';
 
 const JWT_SECRET: string = process.env.JWT_SECRET || 'your-secret-key';
 const JWT_EXPIRES_IN: string = process.env.JWT_EXPIRES_IN || '24h';

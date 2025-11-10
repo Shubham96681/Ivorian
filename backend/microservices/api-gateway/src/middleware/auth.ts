@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { AppError } from './errorHandler';
+import { AppError } from './errorHandler.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 

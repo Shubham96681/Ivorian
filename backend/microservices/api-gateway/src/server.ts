@@ -13,12 +13,12 @@ import {
   // validatePropertySearch,
   handleValidationErrors, 
   sanitizeRequest 
-} from './middleware/validation';
-import { errorHandler, notFoundHandler, asyncHandler } from './middleware/errorHandler';
-import { authenticateToken, optionalAuth, AuthenticatedRequest } from './middleware/auth';
-import { AuthService } from './services/authService';
-import { PropertyService } from './services/propertyService';
-import { seedDatabase } from './utils/seedData';
+} from './middleware/validation.js';
+import { errorHandler, notFoundHandler, asyncHandler } from './middleware/errorHandler.js';
+import { authenticateToken, optionalAuth, AuthenticatedRequest } from './middleware/auth.js';
+import { AuthService } from './services/authService.js';
+import { PropertyService } from './services/propertyService.js';
+import { seedDatabase } from './utils/seedData.js';
 
 // Load environment variables
 dotenv.config();
