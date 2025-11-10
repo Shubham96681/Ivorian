@@ -1,5 +1,7 @@
 # Ivorian Realty - Complete Platform
 
+> CI/CD Pipeline Active - Auto-deploying to EC2
+
 A comprehensive real estate platform built with modern microservices architecture and React frontend.
 
 ## 🏗️ Project Structure
