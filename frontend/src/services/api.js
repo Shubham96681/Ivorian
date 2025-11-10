@@ -1,8 +1,21 @@
 import axios from 'axios';
 
 // Create axios instance with default configuration for microservices
+// In production, use relative URL so it works with nginx proxy
+const getApiBaseURL = () => {
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL;
+  }
+  // In production, use relative URL
+  if (import.meta.env.PROD) {
+    return '/api';
+  }
+  // In development, use localhost
+  return 'http://localhost:3000/api';
+};
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api',
+  baseURL: getApiBaseURL(),
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -49,7 +62,7 @@ export const authAPI = axios.create({
 });
 
 export const propertyAPI = axios.create({
-  baseURL: import.meta.env.VITE_PROPERTY_SERVICE_URL || 'http://localhost:8000/api/properties',
+  baseURL: import.meta.env.PROD ? '/api/properties' : (import.meta.env.VITE_PROPERTY_SERVICE_URL || 'http://localhost:3000/api/properties'),
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
