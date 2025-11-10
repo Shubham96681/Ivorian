@@ -7,11 +7,9 @@ export async function seedDatabase() {
     const usersCollection = db.collection('users');
     const propertiesCollection = db.collection('properties');
 
-    // Check if data already exists
-    const userCount = await usersCollection.countDocuments();
-    const propertyCount = await propertiesCollection.countDocuments();
-
-    if (userCount > 0 && propertyCount > 0) {
+    // Check if data already exists by checking for specific test users
+    const existingUser = await usersCollection.findOne({ email: 'john.doe@example.com' });
+    if (existingUser) {
       console.log('Database already seeded, skipping...');
       return;
     }
@@ -49,6 +47,36 @@ export async function seedDatabase() {
         password: hashedPassword,
         role: 'agent',
         phone: '+225555123456',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        firstName: 'Admin',
+        lastName: 'User',
+        email: 'admin@example.com',
+        password: hashedPassword,
+        role: 'admin',
+        phone: '+225111222333',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        firstName: 'Buyer',
+        lastName: 'Test',
+        email: 'buyer@example.com',
+        password: hashedPassword,
+        role: 'buyer',
+        phone: '+225444555666',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        firstName: 'Seller',
+        lastName: 'Test',
+        email: 'seller@example.com',
+        password: hashedPassword,
+        role: 'seller',
+        phone: '+225777888999',
         createdAt: new Date(),
         updatedAt: new Date()
       }
@@ -186,8 +214,11 @@ export async function seedDatabase() {
     console.log('Database seeding completed successfully!');
     console.log('Sample users created:');
     console.log('- john.doe@example.com (buyer)');
+    console.log('- buyer@example.com (buyer)');
     console.log('- jane.smith@example.com (seller)');
+    console.log('- seller@example.com (seller)');
     console.log('- ahmed.traore@example.com (agent)');
+    console.log('- admin@example.com (admin)');
     console.log('Password for all users: password123');
 
   } catch (error: any) {
