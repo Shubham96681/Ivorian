@@ -9,8 +9,8 @@
     "dev": "tsc --watch",
     "test": "jest",
     "lint": "eslint src/",
-    "clean": "rimraf dist",
-    "prepublish": "npm run clean && npm run build"
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run build"
   },
   "files": [
     "dist/",
