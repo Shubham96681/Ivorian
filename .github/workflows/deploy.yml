@@ -192,8 +192,11 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 ${{ secrets.SSH_USER || 'ec2-user' }}@${{ secrets.SERVER_HOST || '13.126.156.163' }} << 'EOF'
             set -e
-            echo "Extracting backend builds..."
+            echo "Cleaning up old node_modules to avoid conflicts..."
             cd /opt/ivorian-realty
+            sudo rm -rf backend/microservices/*/node_modules 2>/dev/null || true
+            
+            echo "Extracting backend builds..."
             sudo tar -xzf /tmp/backend-builds.tar.gz -C backend/microservices/
             
             echo "Extracting frontend build..."

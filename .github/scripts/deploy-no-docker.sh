@@ -97,27 +97,40 @@ echo "Stopping existing services..."
 pkill -f "node.*dist/server.js" || true
 sleep 2
 
-# Install dependencies in each service (if needed)
+# Install dependencies in each service
 echo "Installing production dependencies..."
 
+# Clean up any existing node_modules to avoid conflicts
 cd /opt/ivorian-realty/backend/microservices/shared-lib
+if [ -d "node_modules" ]; then
+    rm -rf node_modules
+fi
 if [ -f "package.json" ]; then
-    npm ci --only=production || npm install --only=production
+    npm install --omit=dev --no-save || npm install --production --no-save
 fi
 
 cd /opt/ivorian-realty/backend/microservices/auth-service
+if [ -d "node_modules" ]; then
+    rm -rf node_modules
+fi
 if [ -f "package.json" ]; then
-    npm ci --only=production || npm install --only=production
+    npm install --omit=dev --no-save || npm install --production --no-save
 fi
 
 cd /opt/ivorian-realty/backend/microservices/property-service
+if [ -d "node_modules" ]; then
+    rm -rf node_modules
+fi
 if [ -f "package.json" ]; then
-    npm ci --only=production || npm install --only=production
+    npm install --omit=dev --no-save || npm install --production --no-save
 fi
 
 cd /opt/ivorian-realty/backend/microservices/api-gateway
+if [ -d "node_modules" ]; then
+    rm -rf node_modules
+fi
 if [ -f "package.json" ]; then
-    npm ci --only=production || npm install --only=production
+    npm install --omit=dev --no-save || npm install --production --no-save
 fi
 
 # Start Auth Service
