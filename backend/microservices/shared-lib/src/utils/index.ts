@@ -30,4 +30,4 @@ export const validatePhoneNumber = (phone: string): boolean => {
 };
 
 // Port management utilities
-export * from './portFinder';
+export * from './portFinder.js';
