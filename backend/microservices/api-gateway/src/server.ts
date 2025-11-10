@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
@@ -91,7 +91,7 @@ app.get('/health', (_req, res) => {
 app.post('/api/auth/register', 
   validateRegistration, 
   handleValidationErrors, 
-  asyncHandler(async (req, res) => {
+  asyncHandler(async (req: Request, res: Response) => {
     const result = await authService.register(req.body);
     res.status(201).json(result);
   })
@@ -100,7 +100,7 @@ app.post('/api/auth/register',
 app.post('/api/auth/login', 
   validateLogin, 
   handleValidationErrors, 
-  asyncHandler(async (req, res) => {
+  asyncHandler(async (req: Request, res: Response) => {
     const { email, password } = req.body;
     const result = await authService.login(email, password);
     res.status(200).json(result);
@@ -109,7 +109,7 @@ app.post('/api/auth/login',
 
 app.get('/api/auth/me', 
   authenticateToken, 
-  asyncHandler(async (req, res) => {
+  asyncHandler(async (req: Request, res: Response) => {
     const user = await authService.getCurrentUser(req.user!.userId);
     res.status(200).json({
       success: true,
@@ -120,7 +120,7 @@ app.get('/api/auth/me',
 
 app.put('/api/auth/profile', 
   authenticateToken, 
-  asyncHandler(async (req, res) => {
+  asyncHandler(async (req: Request, res: Response) => {
     const user = await authService.updateProfile(req.user!.userId, req.body);
     res.status(200).json({
       success: true,
@@ -132,7 +132,7 @@ app.put('/api/auth/profile',
 
 app.post('/api/auth/change-password', 
   authenticateToken, 
-  asyncHandler(async (req, res) => {
+  asyncHandler(async (req: Request, res: Response) => {
     const { currentPassword, newPassword } = req.body;
     await authService.changePassword(req.user!.userId, currentPassword, newPassword);
     res.status(200).json({
@@ -145,7 +145,7 @@ app.post('/api/auth/change-password',
 // Property endpoints with validation and MongoDB integration
 app.get('/api/properties', 
   optionalAuth,
-  asyncHandler(async (req, res) => {
+  asyncHandler(async (req: Request, res: Response) => {
     const filters = {
       search: req.query.search as string,
       type: req.query.type as string,
@@ -166,7 +166,7 @@ app.get('/api/properties',
 
 app.get('/api/properties/:id', 
   optionalAuth,
-  asyncHandler(async (req, res) => {
+  asyncHandler(async (req: Request, res: Response) => {
     const result = await propertyService.getPropertyById(req.params.id);
     res.status(200).json(result);
   })
@@ -174,7 +174,7 @@ app.get('/api/properties/:id',
 
 app.post('/api/properties', 
   authenticateToken, 
-  asyncHandler(async (req, res) => {
+  asyncHandler(async (req: Request, res: Response) => {
     const propertyData = {
       ...req.body,
       ownerId: req.user!.userId
@@ -186,7 +186,7 @@ app.post('/api/properties',
 
 app.put('/api/properties/:id', 
   authenticateToken, 
-  asyncHandler(async (req, res) => {
+  asyncHandler(async (req: Request, res: Response) => {
     const result = await propertyService.updateProperty(req.params.id, req.body);
     res.status(200).json(result);
   })
@@ -194,7 +194,7 @@ app.put('/api/properties/:id',
 
 app.delete('/api/properties/:id', 
   authenticateToken, 
-  asyncHandler(async (req, res) => {
+  asyncHandler(async (req: Request, res: Response) => {
     const result = await propertyService.deleteProperty(req.params.id);
     res.status(200).json(result);
   })
@@ -202,7 +202,7 @@ app.delete('/api/properties/:id',
 
 app.get('/api/properties/owner/:ownerId', 
   authenticateToken, 
-  asyncHandler(async (req, res) => {
+  asyncHandler(async (req: Request, res: Response) => {
     const result = await propertyService.getPropertiesByOwner(req.params.ownerId);
     res.status(200).json(result);
   })

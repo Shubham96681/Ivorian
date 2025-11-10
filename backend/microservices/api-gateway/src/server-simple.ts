@@ -200,7 +200,7 @@ app.post('/api/auth/register', validateRegistration, async (req, res) => {
     const token = jwt.sign(
       { userId, email, role },
       JWT_SECRET as string,
-      { expiresIn: JWT_EXPIRES_IN }
+      { expiresIn: JWT_EXPIRES_IN } as jwt.SignOptions
     );
 
     return res.status(201).json({
@@ -256,7 +256,7 @@ app.post('/api/auth/login', validateLogin, async (req, res) => {
     const token = jwt.sign(
       { userId: user._id.toString(), email: user.email, role: user.role },
       JWT_SECRET as string,
-      { expiresIn: JWT_EXPIRES_IN }
+      { expiresIn: JWT_EXPIRES_IN } as jwt.SignOptions
     );
 
     return res.status(200).json({

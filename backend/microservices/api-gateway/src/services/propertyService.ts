@@ -1,3 +1,4 @@
+import { ObjectId } from 'mongodb';
 import { getDatabase } from '@ivorian-realty/shared-lib';
 import { AppError } from '../middleware/errorHandler';
 
@@ -112,11 +113,29 @@ export class PropertyService {
         .limit(limit)
         .toArray();
 
+      const typedProperties: Property[] = propertiesList.map((p: any) => ({
+        _id: p._id.toString(),
+        title: p.title,
+        description: p.description,
+        price: p.price,
+        type: p.type,
+        location: p.location,
+        images: p.images || [],
+        bedrooms: p.bedrooms,
+        bathrooms: p.bathrooms,
+        area: p.area,
+        features: p.features,
+        status: p.status,
+        ownerId: p.ownerId,
+        createdAt: p.createdAt,
+        updatedAt: p.updatedAt
+      }));
+
       return {
         success: true,
         message: 'Properties retrieved successfully',
         data: {
-          properties: propertiesList,
+          properties: typedProperties,
           total,
           page,
           limit
@@ -130,15 +149,33 @@ export class PropertyService {
   async getPropertyById(id: string): Promise<PropertyResponse> {
     try {
       const properties = await this.getPropertiesCollection();
-      const property = await properties.findOne({ _id: id });
+      const property = await properties.findOne({ _id: new ObjectId(id) });
       if (!property) {
         throw new AppError('Property not found', 404);
       }
 
+      const typedProperty: Property = {
+        _id: property._id.toString(),
+        title: property.title as string,
+        description: property.description as string,
+        price: property.price as number,
+        type: property.type as Property['type'],
+        location: property.location as Property['location'],
+        images: (property.images || []) as string[],
+        bedrooms: property.bedrooms as number | undefined,
+        bathrooms: property.bathrooms as number | undefined,
+        area: property.area as number,
+        features: property.features as string[] | undefined,
+        status: property.status as Property['status'],
+        ownerId: property.ownerId as string,
+        createdAt: property.createdAt as Date | undefined,
+        updatedAt: property.updatedAt as Date | undefined
+      };
+
       return {
         success: true,
         message: 'Property retrieved successfully',
-        data: property
+        data: typedProperty
       };
     } catch (error) {
       if (error instanceof AppError) {
@@ -157,18 +194,36 @@ export class PropertyService {
         updatedAt: new Date()
       };
 
-      const result = await properties.insertOne(newProperty);
+      const result = await properties.insertOne(newProperty as any);
       const propertyId = result.insertedId.toString();
 
-      const createdProperty = await properties.findOne({ _id: propertyId });
+      const createdProperty = await properties.findOne({ _id: result.insertedId });
       if (!createdProperty) {
         throw new AppError('Failed to create property', 500);
       }
 
+      const typedProperty: Property = {
+        _id: createdProperty._id.toString(),
+        title: createdProperty.title as string,
+        description: createdProperty.description as string,
+        price: createdProperty.price as number,
+        type: createdProperty.type as Property['type'],
+        location: createdProperty.location as Property['location'],
+        images: (createdProperty.images || []) as string[],
+        bedrooms: createdProperty.bedrooms as number | undefined,
+        bathrooms: createdProperty.bathrooms as number | undefined,
+        area: createdProperty.area as number,
+        features: createdProperty.features as string[] | undefined,
+        status: createdProperty.status as Property['status'],
+        ownerId: createdProperty.ownerId as string,
+        createdAt: createdProperty.createdAt as Date | undefined,
+        updatedAt: createdProperty.updatedAt as Date | undefined
+      };
+
       return {
         success: true,
         message: 'Property created successfully',
-        data: createdProperty
+        data: typedProperty
       };
     } catch (error) {
       if (error instanceof AppError) {
@@ -187,7 +242,7 @@ export class PropertyService {
       };
 
       const result = await properties.updateOne(
-        { _id: id },
+        { _id: new ObjectId(id) },
         { $set: updateFields }
       );
 
@@ -195,15 +250,33 @@ export class PropertyService {
         throw new AppError('Property not found', 404);
       }
 
-      const updatedProperty = await properties.findOne({ _id: id });
+      const updatedProperty = await properties.findOne({ _id: new ObjectId(id) });
       if (!updatedProperty) {
         throw new AppError('Property not found', 404);
       }
 
+      const typedProperty: Property = {
+        _id: updatedProperty._id.toString(),
+        title: updatedProperty.title as string,
+        description: updatedProperty.description as string,
+        price: updatedProperty.price as number,
+        type: updatedProperty.type as Property['type'],
+        location: updatedProperty.location as Property['location'],
+        images: (updatedProperty.images || []) as string[],
+        bedrooms: updatedProperty.bedrooms as number | undefined,
+        bathrooms: updatedProperty.bathrooms as number | undefined,
+        area: updatedProperty.area as number,
+        features: updatedProperty.features as string[] | undefined,
+        status: updatedProperty.status as Property['status'],
+        ownerId: updatedProperty.ownerId as string,
+        createdAt: updatedProperty.createdAt as Date | undefined,
+        updatedAt: updatedProperty.updatedAt as Date | undefined
+      };
+
       return {
         success: true,
         message: 'Property updated successfully',
-        data: updatedProperty
+        data: typedProperty
       };
     } catch (error) {
       if (error instanceof AppError) {
@@ -216,7 +289,7 @@ export class PropertyService {
   async deleteProperty(id: string): Promise<PropertyResponse> {
     try {
       const properties = await this.getPropertiesCollection();
-      const result = await properties.deleteOne({ _id: id });
+      const result = await properties.deleteOne({ _id: new ObjectId(id) });
       if (result.deletedCount === 0) {
         throw new AppError('Property not found', 404);
       }
@@ -224,7 +297,7 @@ export class PropertyService {
       return {
         success: true,
         message: 'Property deleted successfully',
-        data: { _id: id } as any
+        data: { _id: id } as Property
       };
     } catch (error) {
       if (error instanceof AppError) {
@@ -242,10 +315,28 @@ export class PropertyService {
         .sort({ createdAt: -1 })
         .toArray();
 
+      const typedProperties: Property[] = propertiesList.map((p: any) => ({
+        _id: p._id.toString(),
+        title: p.title,
+        description: p.description,
+        price: p.price,
+        type: p.type,
+        location: p.location,
+        images: p.images || [],
+        bedrooms: p.bedrooms,
+        bathrooms: p.bathrooms,
+        area: p.area,
+        features: p.features,
+        status: p.status,
+        ownerId: p.ownerId,
+        createdAt: p.createdAt,
+        updatedAt: p.updatedAt
+      }));
+
       return {
         success: true,
         message: 'Properties retrieved successfully',
-        data: propertiesList
+        data: typedProperties
       };
     } catch (error) {
       throw new AppError('Failed to retrieve properties', 500);

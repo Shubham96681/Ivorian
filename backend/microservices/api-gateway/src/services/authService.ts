@@ -1,10 +1,11 @@
 import bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
+import { ObjectId } from 'mongodb';
 import { getDatabase } from '@ivorian-realty/shared-lib';
 import { AppError } from '../middleware/errorHandler';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
+const JWT_SECRET: string = process.env.JWT_SECRET || 'your-secret-key';
+const JWT_EXPIRES_IN: string = process.env.JWT_EXPIRES_IN || '24h';
 
 export interface User {
   _id?: string;
@@ -66,7 +67,7 @@ export class AuthService {
           role: userData.role 
         },
         JWT_SECRET,
-        { expiresIn: JWT_EXPIRES_IN }
+        { expiresIn: JWT_EXPIRES_IN } as jwt.SignOptions
       );
 
       // Return user data without password
@@ -114,7 +115,7 @@ export class AuthService {
           role: user.role 
         },
         JWT_SECRET,
-        { expiresIn: JWT_EXPIRES_IN }
+        { expiresIn: JWT_EXPIRES_IN } as jwt.SignOptions
       );
 
       // Return user data without password
@@ -139,13 +140,22 @@ export class AuthService {
   async getCurrentUser(userId: string): Promise<Omit<User, 'password'>> {
     try {
       const users = await this.getUsersCollection();
-      const user = await users.findOne({ _id: userId });
+      const user = await users.findOne({ _id: new ObjectId(userId) });
       if (!user) {
         throw new AppError('User not found', 404);
       }
 
       const { password, ...userWithoutPassword } = user;
-      return userWithoutPassword;
+      return {
+        _id: user._id.toString(),
+        firstName: user.firstName as string,
+        lastName: user.lastName as string,
+        email: user.email as string,
+        role: user.role as User['role'],
+        phone: user.phone as string | undefined,
+        createdAt: user.createdAt as Date | undefined,
+        updatedAt: user.updatedAt as Date | undefined
+      };
     } catch (error) {
       if (error instanceof AppError) {
         throw error;
@@ -163,7 +173,7 @@ export class AuthService {
       };
 
       const result = await users.updateOne(
-        { _id: userId },
+        { _id: new ObjectId(userId) },
         { $set: updateFields }
       );
 
@@ -171,13 +181,21 @@ export class AuthService {
         throw new AppError('User not found', 404);
       }
 
-      const updatedUser = await users.findOne({ _id: userId });
+      const updatedUser = await users.findOne({ _id: new ObjectId(userId) });
       if (!updatedUser) {
         throw new AppError('User not found', 404);
       }
 
-      const { password, ...userWithoutPassword } = updatedUser;
-      return userWithoutPassword;
+      return {
+        _id: updatedUser._id.toString(),
+        firstName: updatedUser.firstName as string,
+        lastName: updatedUser.lastName as string,
+        email: updatedUser.email as string,
+        role: updatedUser.role as User['role'],
+        phone: updatedUser.phone as string | undefined,
+        createdAt: updatedUser.createdAt as Date | undefined,
+        updatedAt: updatedUser.updatedAt as Date | undefined
+      };
     } catch (error) {
       if (error instanceof AppError) {
         throw error;
@@ -189,7 +207,7 @@ export class AuthService {
   async changePassword(userId: string, currentPassword: string, newPassword: string): Promise<void> {
     try {
       const users = await this.getUsersCollection();
-      const user = await users.findOne({ _id: userId });
+      const user = await users.findOne({ _id: new ObjectId(userId) });
       if (!user) {
         throw new AppError('User not found', 404);
       }
@@ -206,7 +224,7 @@ export class AuthService {
 
       // Update password
       await users.updateOne(
-        { _id: userId },
+        { _id: new ObjectId(userId) },
         { 
           $set: { 
             password: hashedNewPassword,
