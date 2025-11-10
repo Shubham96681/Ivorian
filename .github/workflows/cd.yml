@@ -59,12 +59,16 @@ jobs:
           path: |
             backend/microservices/shared-lib/dist
             backend/microservices/shared-lib/package*.json
+            backend/microservices/shared-lib/tsconfig.json
             backend/microservices/api-gateway/dist
             backend/microservices/api-gateway/package*.json
+            backend/microservices/api-gateway/tsconfig.json
             backend/microservices/auth-service/dist
             backend/microservices/auth-service/package*.json
+            backend/microservices/auth-service/tsconfig.json
             backend/microservices/property-service/dist
             backend/microservices/property-service/package*.json
+            backend/microservices/property-service/tsconfig.json
           retention-days: 1
 
   # Build Frontend
