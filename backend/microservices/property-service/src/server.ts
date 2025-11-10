@@ -365,8 +365,8 @@ async function startServer() {
     
     console.log('✅ MongoDB connected and indexes created');
     
-    // Get the assigned port for Property Service
-    const PORT = portManager.getPort('property-service') || 3002;
+    // Get the assigned port for Property Service (prioritize env PORT)
+    const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : (portManager.getPort('property-service') || 3002);
     
     // Start server
     app.listen(PORT, () => {
