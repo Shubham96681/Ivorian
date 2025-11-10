@@ -152,7 +152,6 @@ export class AuthService {
         throw new AppError('User not found', 404);
       }
 
-      const { password, ...userWithoutPassword } = user;
       return {
         _id: user._id.toString(),
         firstName: user.firstName as string,

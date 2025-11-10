@@ -31,7 +31,7 @@ jobs:
       - name: Build API Gateway image
         uses: docker/build-push-action@v5
         with:
-          context: backend/microservices/api-gateway
+          context: backend/microservices
           file: backend/microservices/api-gateway/Dockerfile
           push: false
           tags: ivorian-realty/api-gateway:latest
@@ -42,7 +42,7 @@ jobs:
       - name: Build Auth Service image
         uses: docker/build-push-action@v5
         with:
-          context: backend/microservices/auth-service
+          context: backend/microservices
           file: backend/microservices/auth-service/Dockerfile
           push: false
           tags: ivorian-realty/auth-service:latest
@@ -53,7 +53,7 @@ jobs:
       - name: Build Property Service image
         uses: docker/build-push-action@v5
         with:
-          context: backend/microservices/property-service
+          context: backend/microservices
           file: backend/microservices/property-service/Dockerfile
           push: false
           tags: ivorian-realty/property-service:latest

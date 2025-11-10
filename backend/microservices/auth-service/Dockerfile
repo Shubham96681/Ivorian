@@ -3,15 +3,22 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
-COPY tsconfig.json ./
+# Build shared-lib first
+COPY shared-lib/package*.json shared-lib/tsconfig.json ./shared-lib/
+COPY shared-lib/src/ ./shared-lib/src/
+WORKDIR /app/shared-lib
+RUN npm ci && npm run build
+
+# Build auth-service
+WORKDIR /app
+COPY auth-service/package*.json ./
+COPY auth-service/tsconfig.json ./
 
 # Install all dependencies (including dev dependencies for build)
 RUN npm ci
 
 # Copy source code
-COPY src/ ./src/
+COPY auth-service/src/ ./src/
 
 # Build the application
 RUN npm run build
@@ -26,7 +33,7 @@ RUN addgroup -g 1001 -S nodejs
 RUN adduser -S nodejs -u 1001
 
 # Copy package files
-COPY package*.json ./
+COPY auth-service/package*.json ./
 
 # Install only production dependencies
 RUN npm ci --only=production && npm cache clean --force

@@ -195,7 +195,6 @@ export class PropertyService {
       };
 
       const result = await properties.insertOne(newProperty as any);
-      const propertyId = result.insertedId.toString();
 
       const createdProperty = await properties.findOne({ _id: result.insertedId });
       if (!createdProperty) {
