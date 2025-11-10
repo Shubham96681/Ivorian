@@ -198,31 +198,39 @@ jobs:
         run: |
           # Verify files exist before copying
           echo "Verifying files exist before copying..."
+          ls -lh *.tar.gz || echo "No tar.gz files found in current directory"
+          pwd
+          ls -la
+          
           if [ ! -f backend-builds.tar.gz ]; then
             echo "✗ Error: backend-builds.tar.gz not found!"
-            ls -la *.tar.gz || echo "No tar.gz files found"
+            echo "Current directory contents:"
+            ls -la
             exit 1
           fi
           if [ ! -f frontend-build.tar.gz ]; then
             echo "✗ Error: frontend-build.tar.gz not found!"
             exit 1
           fi
-          echo "✓ All files verified"
+          echo "✓ All files verified - file sizes:"
+          ls -lh backend-builds.tar.gz frontend-build.tar.gz
           
-          # Copy backend builds
+          # Copy backend builds with verbose output
           echo "Copying compressed backend builds..."
-          scp -o StrictHostKeyChecking=no -o ConnectTimeout=30 backend-builds.tar.gz ${{ secrets.SSH_USER || 'ec2-user' }}@${{ secrets.SERVER_HOST || '13.126.156.163' }}:/tmp/ || {
+          scp -v -o StrictHostKeyChecking=no -o ConnectTimeout=30 backend-builds.tar.gz ${{ secrets.SSH_USER || 'ec2-user' }}@${{ secrets.SERVER_HOST || '13.126.156.163' }}:/tmp/ 2>&1 | tail -10
+          if [ $? -ne 0 ]; then
             echo "✗ Error: Failed to copy backend-builds.tar.gz"
             exit 1
-          }
+          fi
           echo "✓ Backend builds copied"
           
-          # Copy frontend build
+          # Copy frontend build with verbose output
           echo "Copying compressed frontend build..."
-          scp -o StrictHostKeyChecking=no -o ConnectTimeout=30 frontend-build.tar.gz ${{ secrets.SSH_USER || 'ec2-user' }}@${{ secrets.SERVER_HOST || '13.126.156.163' }}:/tmp/ || {
+          scp -v -o StrictHostKeyChecking=no -o ConnectTimeout=30 frontend-build.tar.gz ${{ secrets.SSH_USER || 'ec2-user' }}@${{ secrets.SERVER_HOST || '13.126.156.163' }}:/tmp/ 2>&1 | tail -10
+          if [ $? -ne 0 ]; then
             echo "✗ Error: Failed to copy frontend-build.tar.gz"
             exit 1
-          }
+          fi
           echo "✓ Frontend build copied"
           
           # Copy configuration files
@@ -232,7 +240,10 @@ jobs:
           
           # Verify files were copied
           echo "Verifying files on server..."
-          ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 ${{ secrets.SSH_USER || 'ec2-user' }}@${{ secrets.SERVER_HOST || '13.126.156.163' }} "ls -lh /tmp/*.tar.gz /tmp/deploy.sh 2>/dev/null || echo 'Warning: Some files may be missing'"
+          ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 ${{ secrets.SSH_USER || 'ec2-user' }}@${{ secrets.SERVER_HOST || '13.126.156.163' }} "ls -lh /tmp/*.tar.gz /tmp/deploy.sh 2>&1"
+          
+          # Double-check files exist
+          ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 ${{ secrets.SSH_USER || 'ec2-user' }}@${{ secrets.SERVER_HOST || '13.126.156.163' }} "test -f /tmp/backend-builds.tar.gz && echo '✓ backend-builds.tar.gz exists' || echo '✗ backend-builds.tar.gz missing'; test -f /tmp/frontend-build.tar.gz && echo '✓ frontend-build.tar.gz exists' || echo '✗ frontend-build.tar.gz missing'"
 
       - name: Extract files on server
         run: |
