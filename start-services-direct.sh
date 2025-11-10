@@ -128,6 +128,9 @@ echo -e "${YELLOW}Starting Nginx for frontend...${NC}"
 sudo mkdir -p /opt/ivorian-realty/frontend
 sudo cp -r dist/* /opt/ivorian-realty/frontend/
 
+# Create nginx config directory if it doesn't exist
+sudo mkdir -p /etc/nginx/conf.d
+
 # Create simple nginx config
 sudo tee /etc/nginx/conf.d/ivorian.conf > /dev/null << 'EOF'
 server {
