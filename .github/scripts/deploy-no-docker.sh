@@ -160,10 +160,11 @@ sleep 2
 # Start Property Service
 echo "Starting Property Service..."
 cd /opt/ivorian-realty/backend/microservices/property-service
+# Force PORT=3002 to override any port manager assignment
 NODE_ENV=production PORT=3002 MONGODB_URI="mongodb://admin:password123@localhost:27017/ivorian_realty?authSource=admin" npm start > /tmp/property-service.log 2>&1 &
 PROPERTY_PID=$!
 echo "Property Service PID: $PROPERTY_PID"
-sleep 2
+sleep 3
 
 # Start API Gateway (this will also seed the database)
 echo "Starting API Gateway..."
@@ -218,15 +219,27 @@ sleep 15
 
 # Check service health
 echo "Checking service health..."
-for service in api-gateway auth-service property-service; do
-    if pgrep -f "node.*$service.*dist/server.js" > /dev/null; then
-        echo "✓ $service is running"
-    else
-        echo "⚠ WARNING: $service is not running"
-        echo "  Last 10 lines of log:"
-        tail -10 /tmp/${service}.log || true
-    fi
-done
+# Check by port instead of process name (more reliable)
+if lsof -ti:3000 > /dev/null 2>&1; then
+    echo "✓ API Gateway is running on port 3000"
+else
+    echo "⚠ WARNING: API Gateway is not running on port 3000"
+    tail -10 /tmp/api-gateway.log || true
+fi
+
+if lsof -ti:3001 > /dev/null 2>&1; then
+    echo "✓ Auth Service is running on port 3001"
+else
+    echo "⚠ WARNING: Auth Service is not running on port 3001"
+    tail -10 /tmp/auth-service.log || true
+fi
+
+if lsof -ti:3002 > /dev/null 2>&1; then
+    echo "✓ Property Service is running on port 3002"
+else
+    echo "⚠ WARNING: Property Service is not running on port 3002"
+    tail -10 /tmp/property-service.log || true
+fi
 
 # Verify database seeding
 echo ""
