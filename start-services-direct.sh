@@ -121,7 +121,7 @@ echo "API Gateway PID: $GATEWAY_PID"
 echo -e "${YELLOW}Building frontend...${NC}"
 cd "$REPO_DIR/frontend"
 npm ci
-VITE_API_URL="http://65.0.122.243/api" npm run build
+VITE_API_URL="http://13.126.156.163/api" npm run build
 
 # Start Nginx for frontend
 echo -e "${YELLOW}Starting Nginx for frontend...${NC}"
@@ -173,7 +173,7 @@ echo "  - Redis: localhost:6379"
 echo "  - Auth Service: localhost:3001 (PID: $AUTH_PID)"
 echo "  - Property Service: localhost:3002 (PID: $PROPERTY_PID)"
 echo "  - API Gateway: localhost:3000 (PID: $GATEWAY_PID)"
-echo "  - Frontend: http://65.0.122.243"
+echo "  - Frontend: http://13.126.156.163"
 echo ""
 echo "Logs:"
 echo "  - Auth Service: tail -f /tmp/auth-service.log"

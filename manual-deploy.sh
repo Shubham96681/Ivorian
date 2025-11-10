@@ -73,7 +73,7 @@ echo ""
 echo -e "${YELLOW}Step 3: Building frontend...${NC}"
 cd "$REPO_DIR/frontend"
 npm ci
-VITE_API_URL="http://65.0.122.243/api" npm run build
+VITE_API_URL="http://13.126.156.163/api" npm run build
 echo -e "${GREEN}✓ Frontend built${NC}"
 echo ""
 
@@ -185,9 +185,9 @@ echo "Services status:"
 $DOCKER_COMPOSE_CMD -f docker-compose.yml ps
 echo ""
 echo "Your website should be accessible at:"
-echo -e "${GREEN}http://65.0.122.243${NC}"
+echo -e "${GREEN}http://13.126.156.163${NC}"
 echo ""
 echo "Health check:"
-echo "curl http://65.0.122.243/health"
+echo "curl http://13.126.156.163/health"
 echo ""
 
