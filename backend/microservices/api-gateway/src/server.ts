@@ -43,6 +43,9 @@ const logger = winston.createLogger({
   ]
 });
 
+// Trust proxy (needed for rate limiting behind nginx)
+app.set('trust proxy', 1);
+
 // Middleware
 app.use(helmet({
   contentSecurityPolicy: {

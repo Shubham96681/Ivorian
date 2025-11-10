@@ -95,13 +95,17 @@ export class AuthService {
   async login(email: string, password: string): Promise<AuthResponse> {
     try {
       const users = await this.getUsersCollection();
-      // Find user by email
-      const user = await users.findOne({ email });
+      // Find user by email (case-insensitive)
+      const user = await users.findOne({ email: email.toLowerCase().trim() });
       if (!user) {
         throw new AppError('Invalid email or password', 401);
       }
 
       // Verify password
+      if (!user.password) {
+        throw new AppError('Invalid email or password', 401);
+      }
+      
       const isPasswordValid = await bcrypt.compare(password, user.password);
       if (!isPasswordValid) {
         throw new AppError('Invalid email or password', 401);
