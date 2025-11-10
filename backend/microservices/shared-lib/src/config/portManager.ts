@@ -1,16 +1,6 @@
-import { findFreePort, findMultipleFreePorts } from '../utils/portFinder';
+import { findFreePort, findMultipleFreePorts, PortConfig, ServicePorts } from '../utils/portFinder';
 import * as fs from 'fs';
 import * as path from 'path';
-
-export interface PortConfig {
-  service: string;
-  startPort: number;
-  currentPort?: number;
-}
-
-export interface ServicePorts {
-  [serviceName: string]: number;
-}
 
 export class PortManager {
   private static instance: PortManager;
