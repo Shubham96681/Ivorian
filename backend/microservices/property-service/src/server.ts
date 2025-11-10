@@ -50,7 +50,7 @@ app.use(limiter);
 
 // Health check endpoint
 app.get('/health', (_req, res) => {
-  res.status(200).json({
+  return res.status(200).json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
     service: 'property-service'
@@ -93,7 +93,7 @@ app.get('/', async (req, res) => {
       .limit(parseInt(limit as string))
       .toArray();
     
-    res.json({
+    return res.json({
       success: true,
       data: properties,
       pagination: {
@@ -106,7 +106,7 @@ app.get('/', async (req, res) => {
     
   } catch (error) {
     logger.error('Get properties error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Internal server error'
     });
@@ -126,14 +126,14 @@ app.get('/:id', async (req, res) => {
       });
     }
     
-    res.json({
+    return res.json({
       success: true,
       data: property
     });
     
   } catch (error) {
     logger.error('Get property error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Internal server error'
     });
@@ -236,7 +236,7 @@ app.get('/search', async (req, res) => {
     
     const properties = await propertiesCollection.find(filter).toArray();
     
-    res.json({
+    return res.json({
       success: true,
       data: properties,
       total: properties.length
@@ -244,7 +244,7 @@ app.get('/search', async (req, res) => {
     
   } catch (error) {
     logger.error('Search properties error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Internal server error'
     });
@@ -254,7 +254,7 @@ app.get('/search', async (req, res) => {
 // Error handling middleware
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   logger.error('Unhandled error:', err);
-  res.status(500).json({
+  return res.status(500).json({
     success: false,
     message: 'Internal server error'
   });
@@ -262,7 +262,7 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
 
 // 404 handler
 app.use('*', (req, res) => {
-  res.status(404).json({
+  return res.status(404).json({
     success: false,
     message: `Route ${req.originalUrl} not found`
   });
