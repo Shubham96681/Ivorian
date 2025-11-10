@@ -1,4 +1,6 @@
-# Ivorian Realty - Complete Platform
+# Ivorian Realty
+
+<!-- CI/CD Pipeline Active --> - Complete Platform
 
 > CI/CD Pipeline Active - Auto-deploying to EC2
 
