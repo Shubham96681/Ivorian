@@ -27,31 +27,38 @@ fi
 # Step 3: Clear the database
 echo ""
 echo "Clearing database..."
-docker exec ivorian-mongodb mongosh -u admin -p password123 --authenticationDatabase admin ivorian_realty << 'EOF'
-// Drop indexes first
+docker exec ivorian-mongodb mongosh -u admin -p password123 --authenticationDatabase admin ivorian_realty --eval "
 try {
   db.users.dropIndexes();
   db.properties.dropIndexes();
 } catch(e) {
-  print("Note: Some indexes may not exist");
+  print('Note: Some indexes may not exist');
 }
 
-// Clear collections
 db.users.deleteMany({});
 db.properties.deleteMany({});
 
-print("✓ Database cleared successfully!");
-print("Total users: " + db.users.countDocuments({}));
-print("Total properties: " + db.properties.countDocuments({}));
-EOF
+print('✓ Database cleared successfully!');
+print('Total users: ' + db.users.countDocuments({}));
+print('Total properties: ' + db.properties.countDocuments({}));
+"
 
 # Step 4: Restart API Gateway to trigger seeding
 echo ""
 echo "Restarting API Gateway to trigger seeding..."
 
-# Stop existing API Gateway
-pkill -f "node.*api-gateway.*dist/server.js" || true
-sleep 2
+# Stop existing API Gateway more forcefully
+echo "Stopping existing API Gateway..."
+pkill -9 -f "node.*api-gateway" || true
+pkill -9 -f "node.*dist/server.js" || true
+sleep 3
+
+# Check if port 3000 is still in use
+if lsof -ti:3000 > /dev/null 2>&1; then
+    echo "Port 3000 is still in use, killing process..."
+    kill -9 $(lsof -ti:3000) 2>/dev/null || true
+    sleep 2
+fi
 
 # Start API Gateway
 cd /opt/ivorian-realty/backend/microservices/api-gateway
@@ -67,28 +74,27 @@ sleep 5
 # Step 5: Check if users were created
 echo ""
 echo "Verifying database seeding..."
-docker exec ivorian-mongodb mongosh -u admin -p password123 --authenticationDatabase admin ivorian_realty << 'EOF'
+docker exec ivorian-mongodb mongosh -u admin -p password123 --authenticationDatabase admin ivorian_realty --eval "
 const userCount = db.users.countDocuments({});
-print("Total users in database: " + userCount);
+print('Total users in database: ' + userCount);
 
 if (userCount > 0) {
-  print("\n✓ Users found! Listing all users:");
+  print('\n✓ Users found! Listing all users:');
   db.users.find({}, { email: 1, role: 1, _id: 0 }).forEach(u => {
-    print("  - " + u.email + " (" + u.role + ")");
+    print('  - ' + u.email + ' (' + u.role + ')');
   });
   
-  // Check specifically for buyer@example.com
   const buyer = db.users.findOne({ email: 'buyer@example.com' });
   if (buyer) {
-    print("\n✓ buyer@example.com exists!");
+    print('\n✓ buyer@example.com exists!');
   } else {
-    print("\n⚠ buyer@example.com NOT found!");
+    print('\n⚠ buyer@example.com NOT found!');
   }
 } else {
-  print("\n⚠ No users found! Seeding may have failed.");
-  print("Check /tmp/api-gateway.log for errors.");
+  print('\n⚠ No users found! Seeding may have failed.');
+  print('Check /tmp/api-gateway.log for errors.');
 }
-EOF
+"
 
 # Step 6: Show recent logs
 echo ""
