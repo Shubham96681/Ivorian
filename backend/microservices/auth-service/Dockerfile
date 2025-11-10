@@ -14,6 +14,9 @@ WORKDIR /app
 COPY auth-service/package*.json ./
 COPY auth-service/tsconfig.json ./
 
+# Copy built shared-lib to expected location for npm install (file:../shared-lib)
+RUN mkdir -p /shared-lib && cp -r /app/shared-lib/* /shared-lib/
+
 # Install all dependencies (including dev dependencies for build)
 RUN npm ci
 
