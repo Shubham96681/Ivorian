@@ -236,8 +236,10 @@ async function startServer() {
     await getDatabase();
     logger.info('Connected to MongoDB');
 
-    // Seed database with sample data
-    await seedDatabase();
+    // Seed database with sample data (non-blocking)
+    seedDatabase().catch((error) => {
+      logger.warn('Database seeding failed (non-critical):', error);
+    });
 
     // Initialize port configuration
     await portManager.initializePorts();

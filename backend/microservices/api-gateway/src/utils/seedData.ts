@@ -190,8 +190,13 @@ export async function seedDatabase() {
     console.log('- ahmed.traore@example.com (agent)');
     console.log('Password for all users: password123');
 
-  } catch (error) {
-    console.error('Error seeding database:', error);
-    throw error;
+  } catch (error: any) {
+    // Don't throw - just log the error
+    // This allows the server to start even if seeding fails
+    if (error.code === 11000) {
+      console.log('Database already contains data, skipping seed...');
+    } else {
+      console.error('Error seeding database (non-critical):', error.message || error);
+    }
   }
 }
