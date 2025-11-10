@@ -100,21 +100,23 @@ sleep 2
 # Install dependencies in each service
 echo "Installing production dependencies..."
 
-# Clean up any existing node_modules to avoid conflicts
+# Install shared-lib dependencies first (skip scripts since dist is already built)
 cd /opt/ivorian-realty/backend/microservices/shared-lib
 if [ -d "node_modules" ]; then
     rm -rf node_modules
 fi
 if [ -f "package.json" ]; then
-    npm install --omit=dev --no-save || npm install --production --no-save
+    # Skip scripts since we already have the built dist folder
+    npm install --omit=dev --ignore-scripts --no-save || npm install --production --ignore-scripts --no-save
 fi
 
+# Install service dependencies
 cd /opt/ivorian-realty/backend/microservices/auth-service
 if [ -d "node_modules" ]; then
     rm -rf node_modules
 fi
 if [ -f "package.json" ]; then
-    npm install --omit=dev --no-save || npm install --production --no-save
+    npm install --omit=dev --ignore-scripts --no-save || npm install --production --ignore-scripts --no-save
 fi
 
 cd /opt/ivorian-realty/backend/microservices/property-service
@@ -122,7 +124,7 @@ if [ -d "node_modules" ]; then
     rm -rf node_modules
 fi
 if [ -f "package.json" ]; then
-    npm install --omit=dev --no-save || npm install --production --no-save
+    npm install --omit=dev --ignore-scripts --no-save || npm install --production --ignore-scripts --no-save
 fi
 
 cd /opt/ivorian-realty/backend/microservices/api-gateway
@@ -130,7 +132,7 @@ if [ -d "node_modules" ]; then
     rm -rf node_modules
 fi
 if [ -f "package.json" ]; then
-    npm install --omit=dev --no-save || npm install --production --no-save
+    npm install --omit=dev --ignore-scripts --no-save || npm install --production --ignore-scripts --no-save
 fi
 
 # Start Auth Service
