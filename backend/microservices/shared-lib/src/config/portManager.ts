@@ -1,4 +1,4 @@
-import { findFreePort, findMultipleFreePorts, PortConfig, ServicePorts } from '../utils/portFinder';
+import { findFreePort, findMultipleFreePorts, PortConfig, ServicePorts } from '../utils/portFinder.js';
 import * as fs from 'fs';
 import * as path from 'path';
 
