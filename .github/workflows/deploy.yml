@@ -165,20 +165,55 @@ jobs:
             sudo chmod -R 755 /opt/ivorian-realty
           EOF
 
-      - name: Copy files to server
+      - name: Compress files for transfer
         run: |
-          # Copy backend builds
-          scp -r ./backend-builds/shared-lib/* ${{ secrets.SSH_USER || 'ec2-user' }}@${{ secrets.SERVER_HOST || '13.126.156.163' }}:/opt/ivorian-realty/backend/microservices/shared-lib/
-          scp -r ./backend-builds/api-gateway/* ${{ secrets.SSH_USER || 'ec2-user' }}@${{ secrets.SERVER_HOST || '13.126.156.163' }}:/opt/ivorian-realty/backend/microservices/api-gateway/
-          scp -r ./backend-builds/auth-service/* ${{ secrets.SSH_USER || 'ec2-user' }}@${{ secrets.SERVER_HOST || '13.126.156.163' }}:/opt/ivorian-realty/backend/microservices/auth-service/
-          scp -r ./backend-builds/property-service/* ${{ secrets.SSH_USER || 'ec2-user' }}@${{ secrets.SERVER_HOST || '13.126.156.163' }}:/opt/ivorian-realty/backend/microservices/property-service/
+          echo "Compressing backend builds..."
+          cd backend-builds
+          tar -czf ../backend-builds.tar.gz shared-lib api-gateway auth-service property-service
+          cd ..
           
-          # Copy frontend build
-          scp -r ./frontend-build/* ${{ secrets.SSH_USER || 'ec2-user' }}@${{ secrets.SERVER_HOST || '13.126.156.163' }}:/opt/ivorian-realty/frontend/
+          echo "Compressing frontend build..."
+          tar -czf frontend-build.tar.gz -C frontend-build .
+
+      - name: Copy files to server
+        timeout-minutes: 10
+        run: |
+          echo "Copying compressed backend builds..."
+          scp -o StrictHostKeyChecking=no -o ConnectTimeout=30 backend-builds.tar.gz ${{ secrets.SSH_USER || 'ec2-user' }}@${{ secrets.SERVER_HOST || '13.126.156.163' }}:/tmp/
           
-          # Copy configuration files
-          scp backend/microservices/infrastructure/nginx/nginx.conf ${{ secrets.SSH_USER || 'ec2-user' }}@${{ secrets.SERVER_HOST || '13.126.156.163' }}:/opt/ivorian-realty/backend/microservices/infrastructure/nginx/nginx.conf
-          scp .github/scripts/deploy-no-docker.sh ${{ secrets.SSH_USER || 'ec2-user' }}@${{ secrets.SERVER_HOST || '13.126.156.163' }}:/opt/ivorian-realty/deploy.sh
+          echo "Copying compressed frontend build..."
+          scp -o StrictHostKeyChecking=no -o ConnectTimeout=30 frontend-build.tar.gz ${{ secrets.SSH_USER || 'ec2-user' }}@${{ secrets.SERVER_HOST || '13.126.156.163' }}:/tmp/
+          
+          echo "Copying configuration files..."
+          scp -o StrictHostKeyChecking=no -o ConnectTimeout=30 backend/microservices/infrastructure/nginx/nginx.conf ${{ secrets.SSH_USER || 'ec2-user' }}@${{ secrets.SERVER_HOST || '13.126.156.163' }}:/tmp/nginx.conf
+          scp -o StrictHostKeyChecking=no -o ConnectTimeout=30 .github/scripts/deploy-no-docker.sh ${{ secrets.SSH_USER || 'ec2-user' }}@${{ secrets.SERVER_HOST || '13.126.156.163' }}:/tmp/deploy.sh
+
+      - name: Extract files on server
+        run: |
+          ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 ${{ secrets.SSH_USER || 'ec2-user' }}@${{ secrets.SERVER_HOST || '13.126.156.163' }} << 'EOF'
+            set -e
+            echo "Extracting backend builds..."
+            cd /opt/ivorian-realty
+            sudo tar -xzf /tmp/backend-builds.tar.gz -C backend/microservices/
+            
+            echo "Extracting frontend build..."
+            sudo rm -rf frontend/*
+            sudo tar -xzf /tmp/frontend-build.tar.gz -C frontend/
+            
+            echo "Copying configuration files..."
+            sudo mkdir -p backend/microservices/infrastructure/nginx
+            sudo cp /tmp/nginx.conf backend/microservices/infrastructure/nginx/nginx.conf
+            sudo cp /tmp/deploy.sh deploy.sh
+            sudo chmod +x deploy.sh
+            
+            echo "Setting permissions..."
+            sudo chown -R ec2-user:ec2-user /opt/ivorian-realty
+            
+            echo "Cleaning up temporary files..."
+            rm -f /tmp/backend-builds.tar.gz /tmp/frontend-build.tar.gz /tmp/nginx.conf /tmp/deploy.sh
+            
+            echo "Files extracted successfully!"
+          EOF
 
       - name: Deploy on server
         run: |
