@@ -167,41 +167,105 @@ jobs:
 
       - name: Compress files for transfer
         run: |
+          echo "Checking backend-builds structure..."
+          ls -la backend-builds/ || echo "backend-builds directory not found"
+          ls -la backend-builds/shared-lib backend-builds/api-gateway backend-builds/auth-service backend-builds/property-service 2>/dev/null || echo "Some service directories missing"
+          
           echo "Compressing backend builds..."
           cd backend-builds
-          tar -czf ../backend-builds.tar.gz shared-lib api-gateway auth-service property-service
+          tar -czf ../backend-builds.tar.gz shared-lib api-gateway auth-service property-service || {
+            echo "Error: Failed to create backend-builds.tar.gz"
+            ls -la
+            exit 1
+          }
           cd ..
+          ls -lh backend-builds.tar.gz || exit 1
+          
+          echo "Checking frontend-build structure..."
+          ls -la frontend-build/ || echo "frontend-build directory not found"
           
           echo "Compressing frontend build..."
-          tar -czf frontend-build.tar.gz -C frontend-build .
+          tar -czf frontend-build.tar.gz -C frontend-build . || {
+            echo "Error: Failed to create frontend-build.tar.gz"
+            exit 1
+          }
+          ls -lh frontend-build.tar.gz || exit 1
+          
+          echo "✓ All files compressed successfully"
 
       - name: Copy files to server
         timeout-minutes: 10
         run: |
+          # Verify files exist before copying
+          echo "Verifying files exist before copying..."
+          if [ ! -f backend-builds.tar.gz ]; then
+            echo "✗ Error: backend-builds.tar.gz not found!"
+            ls -la *.tar.gz || echo "No tar.gz files found"
+            exit 1
+          fi
+          if [ ! -f frontend-build.tar.gz ]; then
+            echo "✗ Error: frontend-build.tar.gz not found!"
+            exit 1
+          fi
+          echo "✓ All files verified"
+          
+          # Copy backend builds
           echo "Copying compressed backend builds..."
-          scp -o StrictHostKeyChecking=no -o ConnectTimeout=30 backend-builds.tar.gz ${{ secrets.SSH_USER || 'ec2-user' }}@${{ secrets.SERVER_HOST || '13.126.156.163' }}:/tmp/
+          scp -o StrictHostKeyChecking=no -o ConnectTimeout=30 backend-builds.tar.gz ${{ secrets.SSH_USER || 'ec2-user' }}@${{ secrets.SERVER_HOST || '13.126.156.163' }}:/tmp/ || {
+            echo "✗ Error: Failed to copy backend-builds.tar.gz"
+            exit 1
+          }
+          echo "✓ Backend builds copied"
           
+          # Copy frontend build
           echo "Copying compressed frontend build..."
-          scp -o StrictHostKeyChecking=no -o ConnectTimeout=30 frontend-build.tar.gz ${{ secrets.SSH_USER || 'ec2-user' }}@${{ secrets.SERVER_HOST || '13.126.156.163' }}:/tmp/
+          scp -o StrictHostKeyChecking=no -o ConnectTimeout=30 frontend-build.tar.gz ${{ secrets.SSH_USER || 'ec2-user' }}@${{ secrets.SERVER_HOST || '13.126.156.163' }}:/tmp/ || {
+            echo "✗ Error: Failed to copy frontend-build.tar.gz"
+            exit 1
+          }
+          echo "✓ Frontend build copied"
           
+          # Copy configuration files
           echo "Copying configuration files..."
           scp -o StrictHostKeyChecking=no -o ConnectTimeout=30 backend/microservices/infrastructure/nginx/nginx.conf ${{ secrets.SSH_USER || 'ec2-user' }}@${{ secrets.SERVER_HOST || '13.126.156.163' }}:/tmp/nginx.conf
           scp -o StrictHostKeyChecking=no -o ConnectTimeout=30 .github/scripts/deploy-no-docker.sh ${{ secrets.SSH_USER || 'ec2-user' }}@${{ secrets.SERVER_HOST || '13.126.156.163' }}:/tmp/deploy.sh
+          
+          # Verify files were copied
+          echo "Verifying files on server..."
+          ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 ${{ secrets.SSH_USER || 'ec2-user' }}@${{ secrets.SERVER_HOST || '13.126.156.163' }} "ls -lh /tmp/*.tar.gz /tmp/deploy.sh 2>/dev/null || echo 'Warning: Some files may be missing'"
 
       - name: Extract files on server
         run: |
           ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 ${{ secrets.SSH_USER || 'ec2-user' }}@${{ secrets.SERVER_HOST || '13.126.156.163' }} << 'EOF'
             set -e
+            echo "Verifying files exist on server..."
+            if [ ! -f /tmp/backend-builds.tar.gz ]; then
+              echo "✗ Error: /tmp/backend-builds.tar.gz not found on server!"
+              ls -la /tmp/*.tar.gz || echo "No tar.gz files in /tmp"
+              exit 1
+            fi
+            if [ ! -f /tmp/frontend-build.tar.gz ]; then
+              echo "✗ Error: /tmp/frontend-build.tar.gz not found on server!"
+              exit 1
+            fi
+            echo "✓ All files verified on server"
+            
             echo "Cleaning up old node_modules to avoid conflicts..."
             cd /opt/ivorian-realty
             sudo rm -rf backend/microservices/*/node_modules 2>/dev/null || true
             
             echo "Extracting backend builds..."
-            sudo tar -xzf /tmp/backend-builds.tar.gz -C backend/microservices/
+            sudo tar -xzf /tmp/backend-builds.tar.gz -C backend/microservices/ || {
+              echo "✗ Error: Failed to extract backend-builds.tar.gz"
+              exit 1
+            }
             
             echo "Extracting frontend build..."
             sudo rm -rf frontend/*
-            sudo tar -xzf /tmp/frontend-build.tar.gz -C frontend/
+            sudo tar -xzf /tmp/frontend-build.tar.gz -C frontend/ || {
+              echo "✗ Error: Failed to extract frontend-build.tar.gz"
+              exit 1
+            }
             
             echo "Copying configuration files..."
             sudo mkdir -p backend/microservices/infrastructure/nginx
@@ -215,7 +279,7 @@ jobs:
             echo "Cleaning up temporary files..."
             rm -f /tmp/backend-builds.tar.gz /tmp/frontend-build.tar.gz /tmp/nginx.conf /tmp/deploy.sh
             
-            echo "Files extracted successfully!"
+            echo "✓ Files extracted successfully!"
           EOF
 
       - name: Deploy on server
