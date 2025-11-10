@@ -125,7 +125,7 @@ app.post('/register', async (req, res) => {
       { expiresIn: '24h' }
     );
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: 'User registered successfully',
       data: {
@@ -144,7 +144,7 @@ app.post('/register', async (req, res) => {
 
   } catch (error) {
     logger.error('Registration error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Internal server error'
     });
@@ -189,7 +189,7 @@ app.post('/login', async (req, res) => {
       { expiresIn: '24h' }
     );
 
-    res.json({
+    return res.json({
       success: true,
       message: 'Login successful',
       data: {
@@ -208,7 +208,7 @@ app.post('/login', async (req, res) => {
 
   } catch (error) {
     logger.error('Login error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Internal server error'
     });
@@ -216,7 +216,7 @@ app.post('/login', async (req, res) => {
 });
 
 // Get current user profile
-app.get('/me', (req, res) => {
+app.get('/me', async (req, res) => {
   try {
     const token = req.headers.authorization?.replace('Bearer ', '');
     
@@ -237,7 +237,7 @@ app.get('/me', (req, res) => {
       });
     }
 
-    res.json({
+    return res.json({
       success: true,
       data: {
         id: user.id,
@@ -253,7 +253,7 @@ app.get('/me', (req, res) => {
 
   } catch (error) {
     logger.error('Get user profile error:', error);
-    res.status(401).json({
+    return res.status(401).json({
       success: false,
       message: 'Invalid token'
     });
@@ -261,7 +261,7 @@ app.get('/me', (req, res) => {
 });
 
 // Update user profile
-app.put('/profile', (req, res) => {
+app.put('/profile', async (req, res) => {
   try {
     const token = req.headers.authorization?.replace('Bearer ', '');
     
@@ -297,8 +297,15 @@ app.put('/profile', (req, res) => {
     );
 
     const updatedUser = await usersCollection.findOne({ id: decoded.userId });
+    
+    if (!updatedUser) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found after update'
+      });
+    }
 
-    res.json({
+    return res.json({
       success: true,
       data: {
         id: updatedUser.id,
@@ -314,7 +321,7 @@ app.put('/profile', (req, res) => {
 
   } catch (error) {
     logger.error('Update profile error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Internal server error'
     });
@@ -335,7 +342,7 @@ app.get('/verify', (req, res) => {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key') as any;
     
-    res.json({
+    return res.json({
       success: true,
       data: {
         userId: decoded.userId,
@@ -346,7 +353,7 @@ app.get('/verify', (req, res) => {
 
   } catch (error) {
     logger.error('Token verification error:', error);
-    res.status(401).json({
+    return res.status(401).json({
       success: false,
       message: 'Invalid token'
     });

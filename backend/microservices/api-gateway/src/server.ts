@@ -15,7 +15,7 @@ import {
   sanitizeRequest 
 } from './middleware/validation';
 import { errorHandler, notFoundHandler, asyncHandler } from './middleware/errorHandler';
-import { authenticateToken, optionalAuth } from './middleware/auth';
+import { authenticateToken, optionalAuth, AuthenticatedRequest } from './middleware/auth';
 import { AuthService } from './services/authService';
 import { PropertyService } from './services/propertyService';
 import { seedDatabase } from './utils/seedData';
@@ -109,7 +109,7 @@ app.post('/api/auth/login',
 
 app.get('/api/auth/me', 
   authenticateToken, 
-  asyncHandler(async (req: Request, res: Response) => {
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const user = await authService.getCurrentUser(req.user!.userId);
     res.status(200).json({
       success: true,
@@ -120,7 +120,7 @@ app.get('/api/auth/me',
 
 app.put('/api/auth/profile', 
   authenticateToken, 
-  asyncHandler(async (req: Request, res: Response) => {
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const user = await authService.updateProfile(req.user!.userId, req.body);
     res.status(200).json({
       success: true,
@@ -132,7 +132,7 @@ app.put('/api/auth/profile',
 
 app.post('/api/auth/change-password', 
   authenticateToken, 
-  asyncHandler(async (req: Request, res: Response) => {
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const { currentPassword, newPassword } = req.body;
     await authService.changePassword(req.user!.userId, currentPassword, newPassword);
     res.status(200).json({
@@ -174,7 +174,7 @@ app.get('/api/properties/:id',
 
 app.post('/api/properties', 
   authenticateToken, 
-  asyncHandler(async (req: Request, res: Response) => {
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const propertyData = {
       ...req.body,
       ownerId: req.user!.userId

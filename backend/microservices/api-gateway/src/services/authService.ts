@@ -56,7 +56,7 @@ export class AuthService {
       };
 
       // Insert user into database
-      const result = await users.insertOne(newUser);
+      const result = await users.insertOne(newUser as any);
       const userId = result.insertedId.toString();
 
       // Generate JWT token
@@ -119,14 +119,21 @@ export class AuthService {
       );
 
       // Return user data without password
-      const { password: _, ...userWithoutPassword } = user;
-
       return {
         success: true,
         message: 'Login successful',
         data: {
           token,
-          user: userWithoutPassword
+          user: {
+            _id: user._id.toString(),
+            firstName: user.firstName as string,
+            lastName: user.lastName as string,
+            email: user.email as string,
+            role: user.role as User['role'],
+            phone: user.phone as string | undefined,
+            createdAt: user.createdAt as Date | undefined,
+            updatedAt: user.updatedAt as Date | undefined
+          }
         }
       };
     } catch (error) {

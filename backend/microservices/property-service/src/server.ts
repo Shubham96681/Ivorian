@@ -183,7 +183,7 @@ app.post('/', async (req, res) => {
     
     await propertiesCollection.insertOne(property);
     
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: 'Property created successfully',
       data: property
@@ -191,7 +191,7 @@ app.post('/', async (req, res) => {
     
   } catch (error) {
     logger.error('Create property error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Internal server error'
     });
