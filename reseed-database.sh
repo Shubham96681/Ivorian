@@ -6,7 +6,9 @@ echo "Clearing and reseeding database..."
 docker exec ivorian-mongodb mongosh -u admin -p password123 --authenticationDatabase admin ivorian_realty --eval "
   db.users.deleteMany({});
   db.properties.deleteMany({});
-  print('Database cleared successfully!');
+  db.users.dropIndexes();
+  db.properties.dropIndexes();
+  print('Database cleared successfully');
 "
 
 echo "Database cleared. Restarting API Gateway to trigger seeding..."

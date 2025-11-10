@@ -8,10 +8,15 @@ export async function seedDatabase() {
     const propertiesCollection = db.collection('properties');
 
     // Check if data already exists by checking for specific test users
-    const existingUser = await usersCollection.findOne({ email: 'john.doe@example.com' });
-    if (existingUser) {
-      console.log('Database already seeded, skipping...');
-      return;
+    try {
+      const existingUser = await usersCollection.findOne({ email: 'john.doe@example.com' });
+      if (existingUser) {
+        console.log('Database already seeded, skipping...');
+        return;
+      }
+    } catch (checkError) {
+      // If check fails, continue with seeding
+      console.log('Checking existing data failed, proceeding with seed...');
     }
 
     console.log('Seeding database with sample data...');
@@ -82,7 +87,8 @@ export async function seedDatabase() {
       }
     ];
 
-    const userResult = await usersCollection.insertMany(sampleUsers);
+    // Use insertMany with ordered: false to continue on duplicates
+    const userResult = await usersCollection.insertMany(sampleUsers, { ordered: false });
     console.log(`Created ${userResult.insertedCount} users`);
 
     // Create sample properties
@@ -193,7 +199,8 @@ export async function seedDatabase() {
       }
     ];
 
-    const propertyResult = await propertiesCollection.insertMany(sampleProperties);
+    // Use insertMany with ordered: false to continue on duplicates
+    const propertyResult = await propertiesCollection.insertMany(sampleProperties, { ordered: false });
     console.log(`Created ${propertyResult.insertedCount} properties`);
 
     // Create indexes for better performance
