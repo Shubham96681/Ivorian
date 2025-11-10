@@ -26,13 +26,19 @@ sudo mkdir -p /opt/ivorian-realty/logs
 sudo chown -R ec2-user:ec2-user /opt/ivorian-realty
 sudo chmod -R 755 /opt/ivorian-realty
 
+# Stop existing containers if they exist
+echo "Stopping existing containers..."
+cd /opt/ivorian-realty
+$DOCKER_COMPOSE -f docker-compose.infrastructure.yml down 2>/dev/null || true
+docker stop ivorian-mongodb ivorian-redis 2>/dev/null || true
+docker rm ivorian-mongodb ivorian-redis 2>/dev/null || true
+
 # Start infrastructure services (MongoDB, Redis) with Docker
 echo "Starting MongoDB and Redis..."
 cd /opt/ivorian-realty
 
 # Create docker-compose for just infrastructure
 cat > docker-compose.infrastructure.yml << 'EOF'
-version: '3.8'
 services:
   mongodb:
     image: mongo:7.0
